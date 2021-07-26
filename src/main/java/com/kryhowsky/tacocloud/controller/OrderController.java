@@ -1,8 +1,10 @@
 package com.kryhowsky.tacocloud.controller;
 
 import com.kryhowsky.tacocloud.model.Order;
+import com.kryhowsky.tacocloud.model.User;
 import com.kryhowsky.tacocloud.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -32,14 +34,21 @@ public class OrderController {
     }
 
     @PostMapping
-    public String processOrder(@Valid Order order, Errors errors, SessionStatus sessionStatus) {
+    public String processOrder(
+            @Valid Order order, Errors errors, SessionStatus sessionStatus,
+            @AuthenticationPrincipal User user
+    ) {
         if (errors.hasErrors()) {
             return "orderForm";
         }
 
+        order.setUser(user);
+
         orderRepository.save(order);
         sessionStatus.setComplete();
+
         log.info("Zamówienie zostało złożone: " + order);
+
         return "redirect:/";
     }
 }
